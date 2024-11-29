@@ -18,6 +18,7 @@ public class RecommendController {
     @PostMapping("/recommend")
     public ResponseEntity<Map<String, Object>> recommendPerfume(
             @RequestParam("user_input") String userInput,
+//            @RequestParam("member_id") long memberId,
             @RequestParam(value = "image", required = false) MultipartFile image) {
 
         // 사용자 입력과 이미지 처리
