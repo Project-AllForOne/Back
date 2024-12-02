@@ -1,5 +1,6 @@
 package com.banghyang.object.perfume.service;
 
+import com.banghyang.object.mapper.Mapper;
 import com.banghyang.object.note.entity.BaseNote;
 import com.banghyang.object.note.entity.MiddleNote;
 import com.banghyang.object.note.entity.SingleNote;
@@ -13,7 +14,6 @@ import com.banghyang.object.perfume.dto.PerfumeModifyRequest;
 import com.banghyang.object.perfume.dto.PerfumeResponse;
 import com.banghyang.object.perfume.entity.Perfume;
 import com.banghyang.object.perfume.entity.PerfumeImage;
-import com.banghyang.object.mapper.Mapper;
 import com.banghyang.object.perfume.repository.PerfumeImageRepository;
 import com.banghyang.object.perfume.repository.PerfumeRepository;
 import jakarta.transaction.Transactional;
@@ -90,23 +90,31 @@ public class PerfumeService {
                         .spices(perfumeCreateRequest.getTopNote())
                         .build();
                 topNoteRepository.save(newTopNoteEntity);
-                // 미들노트
-            } else if (perfumeCreateRequest.getMiddleNote() != null) {
+            }
+
+            // 미들노트
+            if (perfumeCreateRequest.getMiddleNote() != null) {
                 MiddleNote newMiddleNoteEntity = MiddleNote.builder()
                         .perfume(newPerfumeEntity)
                         .spices(perfumeCreateRequest.getMiddleNote())
                         .build();
                 middleNoteRepository.save(newMiddleNoteEntity);
-                // 베이스노트
-            } else if (perfumeCreateRequest.getBaseNote() != null) {
+            }
+
+            // 베이스노트
+            if (perfumeCreateRequest.getBaseNote() != null) {
                 BaseNote newBaseNoteEntity = BaseNote.builder()
                         .perfume(newPerfumeEntity)
                         .spices(perfumeCreateRequest.getBaseNote())
                         .build();
                 baseNoteRepository.save(newBaseNoteEntity);
-            } else {
+            }
+
+            if (perfumeCreateRequest.getTopNote() == null &&
+                    perfumeCreateRequest.getMiddleNote() == null &&
+                    perfumeCreateRequest.getBaseNote() == null) {
                 // 노트가 아무것도 존재하지 않을 시 예외 발생시키기
-                throw new IllegalArgumentException("노트 정보가 존재하지 않습니다.");
+                throw new IllegalArgumentException("노트 정보가 존재하지 않아 향수 등록을 실패했습니다.");
             }
         }
     }
@@ -119,24 +127,29 @@ public class PerfumeService {
         Perfume targetPerfumeEntity = perfumeRepository.findById(perfumeModifyRequest.getId())
                 .orElseThrow(() -> new IllegalArgumentException("수정하려 하는 향수의 정보를 찾을 수 없습니다."));
         // toBuilder 사용하여 찾아온 perfume 엔티티 수정
-        Perfume modifyPerfumeEntity = targetPerfumeEntity.toBuilder()
+        Perfume modifyPerfumeEntity = Perfume.builder()
                 .name(perfumeModifyRequest.getName())
                 .description(perfumeModifyRequest.getDescription())
                 .brand(perfumeModifyRequest.getBrand())
                 .grade(perfumeModifyRequest.getGrade())
                 .build();
-        // 수정한 perfume 엔티티 저장
-        perfumeRepository.save(modifyPerfumeEntity);
+        // 향수 엔티티 클래스에 만들어둔 수정 메소드로 수정 적용
+        targetPerfumeEntity.modify(modifyPerfumeEntity);
+        System.out.println(modifyPerfumeEntity); // 수정된 향수 엔티티 확인
 
         // 향수 이미지
         if (perfumeModifyRequest.getImageUrl() != null) {
             // request 에 이미지 URL 존재할 시 이미지 수정 진행
-            PerfumeImage targetPerfumeImageEntity = perfumeImageRepository.findByPerfumeId(modifyPerfumeEntity.getId());
-            PerfumeImage modifyPerfumeImageEntity = targetPerfumeImageEntity.toBuilder()
-                    .url(perfumeModifyRequest.getImageUrl())
-                    .perfume(modifyPerfumeEntity)
-                    .build();
-            perfumeImageRepository.save(modifyPerfumeImageEntity);
+            PerfumeImage targetPerfumeImageEntity = targetPerfumeEntity.getPerfumeImage();
+            if (targetPerfumeImageEntity != null) {
+                PerfumeImage modifyPerfumeImageEntity = PerfumeImage.builder()
+                        .url(perfumeModifyRequest.getImageUrl())
+                        .perfume(targetPerfumeEntity)
+                        .build();
+                targetPerfumeImageEntity.modify(modifyPerfumeImageEntity);
+            } else {
+                throw new IllegalArgumentException("수정하려는 향수 이미지 정보를 찾을 수 없습니다.");
+            }
         }
 
         // 노트
@@ -145,16 +158,30 @@ public class PerfumeService {
                     perfumeModifyRequest.getMiddleNote() == null &&
                     perfumeModifyRequest.getBaseNote() == null) {
                 // request 에 싱글노트가 존재하고 다른 노트가 없을 시 싱글노트 수정 진행
-                SingleNote modifySingleNoteEntity = modifyPerfumeEntity.getSingleNote().toBuilder()
-                        .perfume(modifyPerfumeEntity)
+                SingleNote modifySingleNoteEntity = SingleNote.builder()
+                        .perfume(targetPerfumeEntity)
                         .spices(perfumeModifyRequest.getSingleNote())
                         .build();
-                singleNoteRepository.save(modifySingleNoteEntity);
+
+                if (targetPerfumeEntity.getSingleNote() != null) {
+                    targetPerfumeEntity.getSingleNote().modify(modifySingleNoteEntity);
+                } else {
+                    singleNoteRepository.save(modifySingleNoteEntity);
+                }
 
                 // 싱글노트 외의 다른 노트 엔티티 모두 삭제
-                topNoteRepository.delete(modifyPerfumeEntity.getTopNote());
-                middleNoteRepository.delete(modifyPerfumeEntity.getMiddleNote());
-                baseNoteRepository.delete(modifyPerfumeEntity.getBaseNote());
+                // 탑노트 삭제
+                if (targetPerfumeEntity.getTopNote() != null) {
+                    topNoteRepository.delete(targetPerfumeEntity.getTopNote());
+                }
+                // 미들노트 삭제
+                if (targetPerfumeEntity.getMiddleNote() != null) {
+                    middleNoteRepository.delete(targetPerfumeEntity.getMiddleNote());
+                }
+                // 베이스노트 삭제
+                if (targetPerfumeEntity.getBaseNote() != null) {
+                    baseNoteRepository.delete(targetPerfumeEntity.getBaseNote());
+                }
             } else {
                 // request 에 싱글노트와 다른 노트가 함께 존재시 예외 발생시키기
                 throw new IllegalArgumentException("싱글 노트와 다른 종류의 노트가 동시에 존재할 수 없습니다.");
@@ -163,39 +190,56 @@ public class PerfumeService {
             // 탑노트
             if (perfumeModifyRequest.getTopNote() != null) {
                 // 싱글노트 존재 시 삭제하기
-                if (modifyPerfumeEntity.getSingleNote() != null) {
-                    singleNoteRepository.delete(modifyPerfumeEntity.getSingleNote());
+                if (targetPerfumeEntity.getSingleNote() != null) {
+                    singleNoteRepository.delete(targetPerfumeEntity.getSingleNote());
                 }
 
-                TopNote modifyTopNoteEntity = modifyPerfumeEntity.getTopNote().toBuilder()
-                        .perfume(modifyPerfumeEntity)
+                TopNote modifyTopNoteEntity = TopNote.builder()
+                        .perfume(targetPerfumeEntity)
                         .spices(perfumeModifyRequest.getTopNote())
                         .build();
-                topNoteRepository.save(modifyTopNoteEntity);
-                // 미들노트
-            } else if (perfumeModifyRequest.getMiddleNote() != null) {
+
+                if (targetPerfumeEntity.getTopNote() != null) {
+                    targetPerfumeEntity.getTopNote().modify(modifyTopNoteEntity);
+                } else {
+                    topNoteRepository.save(modifyTopNoteEntity);
+                }
+            }
+            // 미들노트
+            if (perfumeModifyRequest.getMiddleNote() != null) {
                 // 싱글노트 존재 시 삭제하기
-                if (modifyPerfumeEntity.getSingleNote() != null) {
-                    singleNoteRepository.delete(modifyPerfumeEntity.getSingleNote());
+                if (targetPerfumeEntity.getSingleNote() != null) {
+                    singleNoteRepository.delete(targetPerfumeEntity.getSingleNote());
                 }
 
-                MiddleNote modifyMiddleNoteEntity = modifyPerfumeEntity.getMiddleNote().toBuilder()
+                MiddleNote modifyMiddleNoteEntity = MiddleNote.builder()
                         .perfume(modifyPerfumeEntity)
                         .spices(perfumeModifyRequest.getMiddleNote())
                         .build();
-                middleNoteRepository.save(modifyMiddleNoteEntity);
-                // 베이스노트
-            } else if (perfumeModifyRequest.getBaseNote() != null) {
+
+                if (targetPerfumeEntity.getMiddleNote() != null) {
+                    targetPerfumeEntity.getMiddleNote().modify(modifyMiddleNoteEntity);
+                } else {
+                    middleNoteRepository.save(modifyMiddleNoteEntity);
+                }
+            }
+            // 베이스노트
+            if (perfumeModifyRequest.getBaseNote() != null) {
                 // 싱글노트 존재 시 삭제하기
-                if (modifyPerfumeEntity.getSingleNote() != null) {
-                    singleNoteRepository.delete(modifyPerfumeEntity.getSingleNote());
+                if (targetPerfumeEntity.getSingleNote() != null) {
+                    singleNoteRepository.delete(targetPerfumeEntity.getSingleNote());
                 }
 
-                BaseNote modifyBaseNoteEntity = modifyPerfumeEntity.getBaseNote().toBuilder()
+                BaseNote modifyBaseNoteEntity = BaseNote.builder()
                         .perfume(modifyPerfumeEntity)
                         .spices(perfumeModifyRequest.getBaseNote())
                         .build();
-                baseNoteRepository.save(modifyBaseNoteEntity);
+
+                if (targetPerfumeEntity.getBaseNote() != null) {
+                    targetPerfumeEntity.getBaseNote().modify(modifyBaseNoteEntity);
+                } else {
+                    baseNoteRepository.save(modifyBaseNoteEntity);
+                }
             } // 노트 정보가 존재하지 않으면 노트 수정은 진행하지 않음
         }
     }
