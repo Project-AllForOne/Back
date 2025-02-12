@@ -4,6 +4,7 @@ import com.banghyang.object.product.dto.*;
 import com.banghyang.object.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.query.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,8 +22,8 @@ public class ProductController {
      * 모든 향수 조회하기
      */
     @GetMapping
-    public ResponseEntity<List<PerfumeResponse>> getAllPerfumes() {
-        return ResponseEntity.ok(productService.getAllPerfumeResponses());
+    public ResponseEntity<Page<PerfumeResponse>> getAllPerfumes(@RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(productService.getAllPerfumeResponses(page));
     }
 
     /**

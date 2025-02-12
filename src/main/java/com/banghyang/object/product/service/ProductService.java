@@ -16,9 +16,15 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.query.Page;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.ArrayList;
@@ -43,12 +49,18 @@ public class ProductService {
      * @return 모든 향수 response 리스트(name 기준 오름차순 정렬)
      */
     @Cacheable(value = "products") // 캐싱 사용
-    public List<PerfumeResponse> getAllPerfumeResponses() {
-        // perfume 엔티티 전체 가져와서 리스트에 담기
-        List<Product> perfumeEntityList = productRepository.findByCategoryId(1L); // 향수 카테고리 아이디는 1(Long)
+    public Page<PerfumeResponse> getAllPerfumeResponses(@RequestParam(defaultValue = "0") int page) {
+        // 한 페이지에 불러올 제품 갯수
+        int pageSize = 12;
+
+        // 페이징 설정(0페이지 부터, 12개씩, 한글명 오름차순 정렬)
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("nameKr").ascending());
+
+        // 향수 엔티티를 페이징하여 가져오기
+        Page<Product> perfumeEntityPage = productRepository.findByCategoryId(1L, pageable);
 
         // 향수 엔티티 리스트에 stream 으로 항목마다 접근하여 response 로 변환하는 작업 거치기
-        return perfumeEntityList.stream().map(perfumeEntity -> {
+        List<PerfumeResponse> perfumeResponseList = perfumeEntityPage.getContent().stream().map(perfumeEntity -> {
                     PerfumeResponse perfumeResponse = new PerfumeResponse();
                     perfumeResponse.setId(perfumeEntity.getId()); // 아이디
                     perfumeResponse.setNameEn(perfumeEntity.getNameEn()); // 영문명
@@ -101,6 +113,8 @@ public class ProductService {
                 })
                 .sorted(Comparator.comparing(PerfumeResponse::getNameKr)) // 한글명순으로 정렬
                 .toList();
+
+        return new PageImpl<>(perfumeResponseList, pageable, perfumeEntityList);
     }
 
     /**
