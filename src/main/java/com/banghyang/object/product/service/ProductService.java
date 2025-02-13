@@ -16,13 +16,9 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.query.Page;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -57,7 +53,7 @@ public class ProductService {
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("nameKr").ascending());
 
         // 향수 엔티티를 페이징하여 가져오기
-        Page<Product> perfumeEntityPage = productRepository.findByCategoryId(1L, pageable);
+        Page<Product> perfumeEntityPage = productRepository.findByCategory_Id(1L, pageable);
 
         // 향수 엔티티 리스트에 stream 으로 항목마다 접근하여 response 로 변환하는 작업 거치기
         List<PerfumeResponse> perfumeResponseList = perfumeEntityPage.getContent().stream().map(perfumeEntity -> {
@@ -75,7 +71,7 @@ public class ProductService {
                     // 이미지
                     perfumeResponse.setImageUrlList(
                             productImageRepository.findByProduct(perfumeEntity).stream()
-                                    .map(ProductImage::getUrl)
+                                    .map(ProductImage::getNoBgUrl)
                                     .toList()
                     );
 
@@ -114,7 +110,7 @@ public class ProductService {
                 .sorted(Comparator.comparing(PerfumeResponse::getNameKr)) // 한글명순으로 정렬
                 .toList();
 
-        return new PageImpl<>(perfumeResponseList, pageable, perfumeEntityList);
+        return new PageImpl<>(perfumeResponseList, pageable, perfumeEntityPage.getTotalElements());
     }
 
     /**
