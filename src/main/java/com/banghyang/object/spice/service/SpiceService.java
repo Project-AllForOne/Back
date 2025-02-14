@@ -13,6 +13,7 @@ import com.banghyang.object.spice.repository.SpiceRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -32,12 +33,18 @@ public class SpiceService {
     /**
      * 모든 향료 response 리스트 (영문명 오름차순 정렬)
      */
-    public List<SpiceResponse> getAllSpiceResponse() {
+    public Page<SpiceResponse> getAllSpiceResponse(int page) {
+        // 한 페이지에 불러올 향료 갯수
+        int pageSize = 12;
+
+        // 페이징 설정(0페이지 부터, 12개씩, 한글명 오름차순 정렬)
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("nameKr").ascending());
+
         // 모든 향료 entity 가져와서 리스트에 담기
-        List<Spice> spiceEntityList = spiceRepository.findAll();
+        Page<Spice> spiceEntityPage = spiceRepository.findAll(pageable);
 
         // 향료 엔티티 리스트 항목들에 접근하여 response 로 변환하여 리턴
-        return spiceEntityList.stream().map(spiceEntity -> {
+        List<SpiceResponse> spiceResponseList = spiceEntityPage.getContent().stream().map(spiceEntity -> {
             SpiceResponse spiceResponse = new SpiceResponse();
             spiceResponse.setId(spiceEntity.getId());
             spiceResponse.setNameKr(spiceEntity.getNameKr());
@@ -56,6 +63,79 @@ public class SpiceService {
             }
             return spiceResponse;
         }).sorted(Comparator.comparing(SpiceResponse::getNameKr)).toList();
+
+        return new PageImpl<>(spiceResponseList, pageable, spiceEntityPage.getTotalElements());
+    }
+
+    /**
+     * 요청한 계열에 해당하는 향료들만 반환하는 엔티티(계열 필터)
+     */
+    public Page<SpiceResponse> getSpicesByLineName(List<String> lineNameList, int page) {
+        // 한 페이지에 불러올 향료 갯수
+        int pageSize = 12;
+
+        // 페이징 설정(0페이지 부터, 12개씩, 한글명 오름차순 정렬)
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("nameKr").ascending());
+
+        // 계열 이름에 해당하는 향료만 페이징 처리하여 가져오기(JPA)
+        Page<Spice> spiceEntityPage = spiceRepository.findByLineNameIn(lineNameList, pageable);
+
+        List<SpiceResponse> spiceResponseList = spiceEntityPage.getContent().stream().map(spiceEntity -> {
+            SpiceResponse spiceResponse = new SpiceResponse();
+            spiceResponse.setId(spiceEntity.getId());
+            spiceResponse.setNameKr(spiceEntity.getNameKr());
+            spiceResponse.setNameEn(spiceEntity.getNameEn());
+            spiceResponse.setContentEn(spiceEntity.getContentEn());
+            spiceResponse.setContentKr(spiceEntity.getContentKr());
+            spiceResponse.setLineId(spiceEntity.getLine().getId());
+            spiceResponse.setLineName(spiceEntity.getLine().getName());
+            // 이미지는 필수정보가 아니므로 존재유무 확인 후 처리
+            List<SpiceImage> spiceImageEntityList = spiceImageRepository.findBySpice(spiceEntity);
+            if (!spiceImageEntityList.isEmpty()) {
+                List<String> imageUrls = spiceImageEntityList.stream()
+                        .map(SpiceImage::getUrl)
+                        .toList();
+                spiceResponse.setImageUrlList(imageUrls);
+            }
+            return spiceResponse;
+        }).sorted(Comparator.comparing(SpiceResponse::getNameKr)).toList();
+
+        return new PageImpl<>(spiceResponseList, pageable, spiceEntityPage.getTotalElements());
+    }
+
+    /**
+     * 향료 백과 검색 기능
+     */
+    public Page<SpiceResponse> getSpicesByKeyword(String keyword, int page) {
+        // 한 페이지에 불러올 향료 갯수
+        int pageSize = 12;
+
+        // 페이징 설정(0페이지 부터, 12개씩, 한글명 오름차순 정렬)
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("nameKr").ascending());
+
+        Page<Spice> searchedSpiceEntityPage = spiceRepository.searchSpices(keyword, pageable);
+
+        List<SpiceResponse> spiceResponseList = searchedSpiceEntityPage.getContent().stream().map(spiceEntity -> {
+            SpiceResponse spiceResponse = new SpiceResponse();
+            spiceResponse.setId(spiceEntity.getId());
+            spiceResponse.setNameKr(spiceEntity.getNameKr());
+            spiceResponse.setNameEn(spiceEntity.getNameEn());
+            spiceResponse.setContentEn(spiceEntity.getContentEn());
+            spiceResponse.setContentKr(spiceEntity.getContentKr());
+            spiceResponse.setLineId(spiceEntity.getLine().getId());
+            spiceResponse.setLineName(spiceEntity.getLine().getName());
+            // 이미지는 필수정보가 아니므로 존재유무 확인 후 처리
+            List<SpiceImage> spiceImageEntityList = spiceImageRepository.findBySpice(spiceEntity);
+            if (!spiceImageEntityList.isEmpty()) {
+                List<String> imageUrls = spiceImageEntityList.stream()
+                        .map(SpiceImage::getUrl)
+                        .toList();
+                spiceResponse.setImageUrlList(imageUrls);
+            }
+            return spiceResponse;
+        }).sorted(Comparator.comparing(SpiceResponse::getNameKr)).toList();
+
+        return new PageImpl<>(spiceResponseList, pageable, searchedSpiceEntityPage.getTotalElements());
     }
 
     /**

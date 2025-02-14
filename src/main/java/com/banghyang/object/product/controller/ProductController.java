@@ -1,14 +1,14 @@
 package com.banghyang.object.product.controller;
 
-import com.banghyang.object.product.dto.*;
+import com.banghyang.object.product.dto.PerfumeResponse;
+import com.banghyang.object.product.dto.ProductCreateRequest;
+import com.banghyang.object.product.dto.ProductModifyRequest;
 import com.banghyang.object.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.query.Page;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RequestMapping("/products")
 @RestController
