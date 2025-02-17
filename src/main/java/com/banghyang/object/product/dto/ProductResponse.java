@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class PerfumeResponse {
+public class ProductResponse {
     private Long id;
     private String nameEn;
     private String nameKr;

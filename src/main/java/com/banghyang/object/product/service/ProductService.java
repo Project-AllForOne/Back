@@ -3,7 +3,8 @@ package com.banghyang.object.product.service;
 import com.banghyang.common.type.NoteType;
 import com.banghyang.object.note.entity.Note;
 import com.banghyang.object.note.repository.NoteRepository;
-import com.banghyang.object.product.dto.PerfumeResponse;
+import com.banghyang.object.product.dto.ProductDetailResponse;
+import com.banghyang.object.product.dto.ProductResponse;
 import com.banghyang.object.product.dto.ProductCreateRequest;
 import com.banghyang.object.product.dto.ProductModifyRequest;
 import com.banghyang.object.product.entity.Product;
@@ -43,8 +44,8 @@ public class ProductService {
     /**
      * @return 모든 향수 response 리스트(name 기준 오름차순 정렬)
      */
-    @Cacheable(value = "products") // 캐싱 사용
-    public Page<PerfumeResponse> getAllPerfumeResponses(int page) {
+//    @Cacheable(value = "products") // 캐싱 사용
+    public Page<ProductResponse> getAllPerfumeResponses(int page) {
         // 한 페이지에 불러올 제품 갯수
         int pageSize = 12;
 
@@ -55,20 +56,20 @@ public class ProductService {
         Page<Product> perfumeEntityPage = productRepository.findByCategoryId(1L, pageable);
 
         // 향수 엔티티 리스트에 stream 으로 항목마다 접근하여 response 로 변환하는 작업 거치기
-        List<PerfumeResponse> perfumeResponseList = perfumeEntityPage.getContent().stream().map(perfumeEntity -> {
-                    PerfumeResponse perfumeResponse = new PerfumeResponse();
-                    perfumeResponse.setId(perfumeEntity.getId()); // 아이디
-                    perfumeResponse.setNameEn(perfumeEntity.getNameEn()); // 영문명
-                    perfumeResponse.setNameKr(perfumeEntity.getNameKr()); // 한글명
-                    perfumeResponse.setBrand(perfumeEntity.getBrand()); // 브랜드
-                    perfumeResponse.setGrade(perfumeEntity.getGrade()); // 부향률
-                    perfumeResponse.setContent(perfumeEntity.getContent()); // 설명
-                    perfumeResponse.setSizeOption(perfumeEntity.getSizeOption()); // 용량 옵션
-                    perfumeResponse.setMainAccord(perfumeEntity.getMainAccord()); // 메인어코드
-                    perfumeResponse.setIngredients(perfumeEntity.getIngredients()); // 성분
+        List<ProductResponse> productResponseList = perfumeEntityPage.getContent().stream().map(perfumeEntity -> {
+                    ProductResponse productResponse = new ProductResponse();
+                    productResponse.setId(perfumeEntity.getId()); // 아이디
+                    productResponse.setNameEn(perfumeEntity.getNameEn()); // 영문명
+                    productResponse.setNameKr(perfumeEntity.getNameKr()); // 한글명
+                    productResponse.setBrand(perfumeEntity.getBrand()); // 브랜드
+                    productResponse.setGrade(perfumeEntity.getGrade()); // 부향률
+                    productResponse.setContent(perfumeEntity.getContent()); // 설명
+                    productResponse.setSizeOption(perfumeEntity.getSizeOption()); // 용량 옵션
+                    productResponse.setMainAccord(perfumeEntity.getMainAccord()); // 메인어코드
+                    productResponse.setIngredients(perfumeEntity.getIngredients()); // 성분
 
                     // 이미지
-                    perfumeResponse.setImageUrlList(
+                    productResponse.setImageUrlList(
                             productImageRepository.findByProduct(perfumeEntity).stream()
                                     .map(ProductImage::getNoBgUrl)
                                     .toList()
@@ -77,45 +78,53 @@ public class ProductService {
                     // 노트
                     List<Note> noteEntityList = noteRepository.findByProduct(perfumeEntity); // 모든 노트 조회
                     // 싱글노트
-                    perfumeResponse.setSingleNote(
+                    productResponse.setSingleNote(
                             noteEntityList.stream()
                                     .filter(noteEntity -> noteEntity.getNoteType().equals(NoteType.SINGLE))
                                     .map(noteEntity -> noteEntity.getSpice().getNameKr())
                                     .collect(Collectors.joining(", "))
                     );
                     // 탑노트
-                    perfumeResponse.setTopNote(
+                    productResponse.setTopNote(
                             noteEntityList.stream()
                                     .filter(noteEntity -> noteEntity.getNoteType().equals(NoteType.TOP))
                                     .map(noteEntity -> noteEntity.getSpice().getNameKr())
                                     .collect(Collectors.joining(", "))
                     );
                     // 미들노트
-                    perfumeResponse.setMiddleNote(
+                    productResponse.setMiddleNote(
                             noteEntityList.stream()
                                     .filter(noteEntity -> noteEntity.getNoteType().equals(NoteType.MIDDLE))
                                     .map(noteEntity -> noteEntity.getSpice().getNameKr())
                                     .collect(Collectors.joining(", "))
                     );
                     // 베이스노트
-                    perfumeResponse.setBaseNote(
+                    productResponse.setBaseNote(
                             noteEntityList.stream()
                                     .filter(noteEntity -> noteEntity.getNoteType().equals(NoteType.BASE))
                                     .map(noteEntity -> noteEntity.getSpice().getNameKr())
                                     .collect(Collectors.joining(", "))
                     );
-                    return perfumeResponse;
+                    return productResponse;
                 })
-                .sorted(Comparator.comparing(PerfumeResponse::getNameKr)) // 한글명순으로 정렬
+                .sorted(Comparator.comparing(ProductResponse::getNameKr)) // 한글명순으로 정렬
                 .toList();
 
-        return new PageImpl<>(perfumeResponseList, pageable, perfumeEntityPage.getTotalElements());
+        return new PageImpl<>(productResponseList, pageable, perfumeEntityPage.getTotalElements());
+    }
+
+    /**
+     * 제품 상세페이지 정보 제공 메소드
+     */
+    public ProductDetailResponse getProductDetail(Long productId) {
+
+        return null;
     }
 
     /**
      * 새로운 제품 정보 등록 메소드
      */
-    @CacheEvict(value = "products") // 수정 시 마다 캐시데이터 함께 업데이트
+//    @CacheEvict(value = "products") // 수정 시 마다 캐시데이터 함께 업데이트
     public void createProduct(ProductCreateRequest productCreateRequest) {
         // 제품 정보 등록
         Product newProductEntity = Product.builder()
@@ -265,7 +274,7 @@ public class ProductService {
     /**
      * 제품 정보 수정 메소드
      */
-    @CacheEvict(value = "products") // 수정 시 마다 캐시데이터 함께 업데이트
+//    @CacheEvict(value = "products") // 수정 시 마다 캐시데이터 함께 업데이트
     public void modifyProduct(ProductModifyRequest productModifyRequest) {
         // 수정할 제품 엔티티 request 의 id 값으로 찾아오기
         Product targetProductEntity = productRepository.findById(productModifyRequest.getId()).orElseThrow(() ->
@@ -541,7 +550,7 @@ public class ProductService {
     /**
      * 제품 삭제 메소드
      */
-    @CacheEvict(value = "products") // 수정 시 마다 캐시데이터 함께 업데이트
+//    @CacheEvict(value = "products") // 수정 시 마다 캐시데이터 함께 업데이트
     public void deletePerfume(Long perfumeId) {
         // 삭제할 제품 엔티티
         Product targetProductEntity = productRepository.findById(perfumeId).orElseThrow(() ->

@@ -1,6 +1,8 @@
 package com.banghyang.object.product.controller;
 
-import com.banghyang.object.product.dto.PerfumeResponse;
+import com.amazonaws.Response;
+import com.banghyang.object.product.dto.ProductDetailResponse;
+import com.banghyang.object.product.dto.ProductResponse;
 import com.banghyang.object.product.dto.ProductCreateRequest;
 import com.banghyang.object.product.dto.ProductModifyRequest;
 import com.banghyang.object.product.service.ProductService;
@@ -22,8 +24,16 @@ public class ProductController {
      * 모든 향수 조회하기
      */
     @GetMapping
-    public ResponseEntity<Page<PerfumeResponse>> getAllPerfumes(@RequestParam(defaultValue = "0") int page) {
+    public ResponseEntity<Page<ProductResponse>> getAllPerfumes(@RequestParam(defaultValue = "0") int page) {
         return ResponseEntity.ok(productService.getAllPerfumeResponses(page));
+    }
+
+    /**
+     * 향수 상세 페이지
+     */
+    @GetMapping("/{productId}")
+    public ResponseEntity<ProductDetailResponse> getProductDetail(@PathVariable Long productId) {
+        return ResponseEntity.ok(productService.getProductDetail(productId));
     }
 
     /**
