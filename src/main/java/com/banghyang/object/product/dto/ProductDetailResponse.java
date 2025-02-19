@@ -10,4 +10,14 @@ public class ProductDetailResponse {
     private List<SimilarProductResponse> noteSimilarProductList;
     private List<SimilarProductResponse> imageSimilarProductList;
     private List<ReviewResponse> reviewList;
+import java.util.List;
+import java.util.Map;
+
+@Data
+public class ProductDetailResponse {
+    private Map<String, List<SimilarPerfumeResponse>> similarPerfumes;
+
+    public ProductDetailResponse(Map<String, List<SimilarPerfumeResponse>> similarPerfumes) {
+        this.similarPerfumes = similarPerfumes;
+    }
 }

@@ -6,11 +6,15 @@ import com.banghyang.object.product.dto.ProductResponse;
 import com.banghyang.object.product.dto.ProductCreateRequest;
 import com.banghyang.object.product.dto.ProductModifyRequest;
 import com.banghyang.object.product.service.ProductService;
+import com.banghyang.object.product.service.SimilarPerfumeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 @RequestMapping("/products")
 @RestController
@@ -19,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class ProductController {
 
     private final ProductService productService;
+    private final SimilarPerfumeService similarPerfumeService;
 
     /**
      * 모든 향수 조회하기
@@ -30,6 +35,14 @@ public class ProductController {
 
     /**
      * 향수 상세 페이지
+     */
+    @GetMapping("/{productId}")
+    public ResponseEntity<ProductDetailResponse> getProductDetail(@PathVariable Long productId) {
+        return ResponseEntity.ok(productService.getProductDetail(productId));
+    }
+
+    /**
+     * 특정 향수 조회하기
      */
     @GetMapping("/{productId}")
     public ResponseEntity<ProductDetailResponse> getProductDetail(@PathVariable Long productId) {
@@ -62,4 +75,5 @@ public class ProductController {
         productService.deletePerfume(productId);
         return ResponseEntity.ok().build();
     }
+
 }

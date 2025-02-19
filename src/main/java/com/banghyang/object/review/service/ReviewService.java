@@ -7,14 +7,23 @@ import com.banghyang.object.product.entity.Product;
 import com.banghyang.object.product.repository.ProductRepository;
 import com.banghyang.object.review.dto.ReviewModifyRequest;
 import com.banghyang.object.review.dto.ReviewRequest;
+import com.banghyang.object.review.dto.ReviewResponse;
 import com.banghyang.object.review.entity.Review;
 import com.banghyang.object.review.repository.ReviewRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
+@Slf4j
+@EnableCaching
 @Transactional
 @RequiredArgsConstructor
 public class ReviewService {
@@ -66,4 +75,26 @@ public class ReviewService {
         // 리뷰 삭제하기
         reviewRepository.delete(targetReviewEntity);
     }
+
+    /**
+     * 특정 향수의 리뷰 목록 조회
+     */
+    @Cacheable(value = "productReviews", key = "'product_' + #productId")
+    public List<ReviewResponse> getReviewsByProductId(Long productId) {
+        log.info("Fetching reviews for productId: {}", productId);
+
+        // 현재 사용 중인 메소드
+        List<Review> reviews = reviewRepository.findByProductId(productId);
+
+        log.info("Found {} reviews", reviews.size());
+
+        // 2. DTO 변환
+        return reviews.stream().map(review -> new ReviewResponse(
+                review.getId(),
+                review.getMember().getName(),
+                review.getContent(),
+                review.getTimeStamp()
+        )).collect(Collectors.toList());
+    }
+
 }
