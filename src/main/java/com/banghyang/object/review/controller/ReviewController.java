@@ -75,7 +75,7 @@ public class ReviewController {
      * 관리자 리뷰 삭제 메소드
      */
 
-    @DeleteMapping("/{reviewId}")
+    @DeleteMapping("/admin/reviews/{reviewId}") // 관리자 삭제용으로 경로 변경
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteReviewByAdmin(@PathVariable Long reviewId) {
         reviewService.deleteReview(reviewId);

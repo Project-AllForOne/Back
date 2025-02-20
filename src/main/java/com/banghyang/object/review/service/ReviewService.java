@@ -130,7 +130,7 @@ public class ReviewService {
     public List<ReviewResponse> getAllReviews() {
         log.info("Fetching all reviews");
 
-        List<Review> reviews = reviewRepository.findAllReviews(); // List<Review>로 반환됨
+        List<Review> reviews = reviewRepository.findAll(); // List<Review>로 반환됨
 
         log.info("Found {} reviews", reviews.size());
 
