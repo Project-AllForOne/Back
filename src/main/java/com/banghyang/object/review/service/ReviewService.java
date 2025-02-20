@@ -123,4 +123,24 @@ public class ReviewService {
         )).collect(Collectors.toList());
     }
 
+    /**
+     * 리뷰 전체 목록 조회
+     */
+    @Cacheable(value = "allReviews")
+    public List<ReviewResponse> getAllReviews() {
+        log.info("Fetching all reviews");
+
+        List<Review> reviews = reviewRepository.findAllReviews(); // List<Review>로 반환됨
+
+        log.info("Found {} reviews", reviews.size());
+
+        return reviews.stream().map(review -> new ReviewResponse(
+                review.getId(),
+                review.getMember().getName(),
+                review.getContent(),
+                review.getTimeStamp()
+        )).collect(Collectors.toList());
+    }
+
+
 }
