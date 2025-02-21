@@ -31,6 +31,7 @@ dependencies {
     runtimeOnly 'com.mysql:mysql-connector-j' // mysql
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher' // 필수
     testImplementation 'org.springframework.boot:spring-boot-starter-test' // Spring boot test
+    implementation 'org.springframework.boot:spring-boot-starter-security' // Spring Security
 }
 
 //tasks.named('test') {useJUnitPlatform()}

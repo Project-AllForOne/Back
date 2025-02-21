@@ -8,6 +8,7 @@ import com.banghyang.object.review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,6 +39,14 @@ public class ReviewController {
     }
 
     /**
+     * 모든 리뷰 조회
+     */
+    @GetMapping("/all")
+    public ResponseEntity<List<ReviewResponse>> getAllReviews() {
+        return ResponseEntity.ok(reviewService.getAllReviews());
+    }
+
+    /**
      * 리뷰 생성 메소드
      */
     @PostMapping
@@ -63,4 +72,17 @@ public class ReviewController {
         reviewService.deleteReview(reviewId);
         return ResponseEntity.ok().build();
     }
+
+    /**
+     * 관리자 리뷰 삭제 메소드
+     */
+
+    @DeleteMapping("/admin/reviews/{reviewId}") // 관리자 삭제용으로 경로 변경
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> deleteReviewByAdmin(@PathVariable Long reviewId) {
+        reviewService.deleteReview(reviewId);
+        return ResponseEntity.ok().build();
+    }
+
+
 }
