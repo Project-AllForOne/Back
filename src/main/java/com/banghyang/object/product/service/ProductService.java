@@ -13,6 +13,7 @@ import com.banghyang.object.product.repository.ProductRepository;
 import com.banghyang.object.review.service.ReviewService;
 import com.banghyang.object.spice.entity.Spice;
 import com.banghyang.object.spice.repository.SpiceRepository;
+import com.banghyang.scentlens.dto.ProductResponse;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +48,75 @@ public class ProductService {
     public List<PerfumeResponse> getAllPerfumeResponses() {
         // perfume 엔티티 전체 가져와서 리스트에 담기
         List<Product> perfumeEntityList = productRepository.findByCategoryId(1L); // 향수 카테고리 아이디는 1(Long)
+
+        // 향수 엔티티 리스트에 stream 으로 항목마다 접근하여 response 로 변환하는 작업 거치기
+        return perfumeEntityList.stream().map(perfumeEntity -> {
+                    PerfumeResponse perfumeResponse = new PerfumeResponse();
+                    perfumeResponse.setId(perfumeEntity.getId()); // 아이디
+                    perfumeResponse.setNameEn(perfumeEntity.getNameEn()); // 영문명
+                    perfumeResponse.setNameKr(perfumeEntity.getNameKr()); // 한글명
+                    perfumeResponse.setBrand(perfumeEntity.getBrand()); // 브랜드
+                    perfumeResponse.setGrade(perfumeEntity.getGrade()); // 부향률
+                    perfumeResponse.setContent(perfumeEntity.getContent()); // 설명
+                    perfumeResponse.setSizeOption(perfumeEntity.getSizeOption()); // 용량 옵션
+                    perfumeResponse.setMainAccord(perfumeEntity.getMainAccord()); // 메인어코드
+                    perfumeResponse.setIngredients(perfumeEntity.getIngredients()); // 성분
+
+                    // 이미지
+                    perfumeResponse.setImageUrlList(
+                            productImageRepository.findByProduct(perfumeEntity).stream()
+                                    .map(productImage -> {
+                                        if (productImage.getNoBgUrl() != null) {
+                                            // 배경제거 이미지가 있으면 배경 제거 이미지 URL 로 반환
+                                            return productImage.getNoBgUrl();
+                                        } else {
+                                            // 배경제거 이미지가 없으면 기존 이미지로 반환
+                                            return productImage.getUrl();
+                                        }
+                                    }).toList()
+                    );
+
+                    // 노트
+                    List<Note> noteEntityList = noteRepository.findByProduct(perfumeEntity); // 모든 노트 조회
+                    // 싱글노트
+                    perfumeResponse.setSingleNote(
+                            noteEntityList.stream()
+                                    .filter(noteEntity -> noteEntity.getNoteType().equals(NoteType.SINGLE))
+                                    .map(noteEntity -> noteEntity.getSpice().getNameKr())
+                                    .collect(Collectors.joining(", "))
+                    );
+                    // 탑노트
+                    perfumeResponse.setTopNote(
+                            noteEntityList.stream()
+                                    .filter(noteEntity -> noteEntity.getNoteType().equals(NoteType.TOP))
+                                    .map(noteEntity -> noteEntity.getSpice().getNameKr())
+                                    .collect(Collectors.joining(", "))
+                    );
+                    // 미들노트
+                    perfumeResponse.setMiddleNote(
+                            noteEntityList.stream()
+                                    .filter(noteEntity -> noteEntity.getNoteType().equals(NoteType.MIDDLE))
+                                    .map(noteEntity -> noteEntity.getSpice().getNameKr())
+                                    .collect(Collectors.joining(", "))
+                    );
+                    // 베이스노트
+                    perfumeResponse.setBaseNote(
+                            noteEntityList.stream()
+                                    .filter(noteEntity -> noteEntity.getNoteType().equals(NoteType.BASE))
+                                    .map(noteEntity -> noteEntity.getSpice().getNameKr())
+                                    .collect(Collectors.joining(", "))
+                    );
+                    return perfumeResponse;
+                })
+                .sorted(Comparator.comparing(PerfumeResponse::getNameKr)) // 한글명순으로 정렬
+                .toList();
+    }
+    /**
+     *
+     */
+    public List<PerfumeResponse> getAllProductResponses() {
+        // perfume 엔티티 전체 가져와서 리스트에 담기
+        List<Product> perfumeEntityList = productRepository.findByCategoryId(3L); // 자체제작 향수 카테고리 아이디는 3(Long)
 
         // 향수 엔티티 리스트에 stream 으로 항목마다 접근하여 response 로 변환하는 작업 거치기
         return perfumeEntityList.stream().map(perfumeEntity -> {
@@ -479,5 +549,6 @@ public class ProductService {
         // Map 타입 그대로 전달
         return new ProductDetailResponse(similarPerfumes);
     }
+
 
 }

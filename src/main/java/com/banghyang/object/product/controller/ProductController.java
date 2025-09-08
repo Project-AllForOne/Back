@@ -3,6 +3,7 @@ package com.banghyang.object.product.controller;
 import com.banghyang.object.product.dto.*;
 import com.banghyang.object.product.service.ProductService;
 import com.banghyang.object.product.service.SimilarPerfumeService;
+import com.banghyang.scentlens.dto.ProductResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -21,11 +22,19 @@ public class ProductController {
     private final SimilarPerfumeService similarPerfumeService;
 
     /**
-     * 모든 향수 조회하기
+     * 일반향수 조회하기
      */
     @GetMapping
     public ResponseEntity<List<PerfumeResponse>> getAllPerfumes() {
         return ResponseEntity.ok(productService.getAllPerfumeResponses());
+    }
+
+    /**
+     * 자체제작 향수 조회하기
+     */
+    @GetMapping("/product")
+    public ResponseEntity<List<PerfumeResponse>> getAllProducts() {
+        return ResponseEntity.ok(productService.getAllProductResponses());
     }
 
     /**
