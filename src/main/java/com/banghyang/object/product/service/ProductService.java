@@ -36,9 +36,7 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
     private final NoteRepository noteRepository;
     private final SpiceRepository spiceRepository;
-    private final WebClient webClient;
     private final SimilarPerfumeService similarPerfumeService;
-    private final ReviewService reviewService;
 
     /**
      * @return 모든 향수 response 리스트(name 기준 오름차순 정렬)
