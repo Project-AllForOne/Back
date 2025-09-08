@@ -1,15 +1,16 @@
 package com.banghyang.object.product.controller;
 
-import com.banghyang.object.product.dto.*;
+import com.banghyang.object.product.dto.PerfumeResponse;
+import com.banghyang.object.product.dto.ProductCreateRequest;
+import com.banghyang.object.product.dto.ProductDetailResponse;
+import com.banghyang.object.product.dto.ProductModifyRequest;
 import com.banghyang.object.product.service.ProductService;
-import com.banghyang.object.product.service.SimilarPerfumeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RequestMapping("/products")
 @RestController
@@ -18,14 +19,21 @@ import java.util.Map;
 public class ProductController {
 
     private final ProductService productService;
-    private final SimilarPerfumeService similarPerfumeService;
 
     /**
-     * 모든 향수 조회하기
+     * 일반향수 조회하기
      */
     @GetMapping
     public ResponseEntity<List<PerfumeResponse>> getAllPerfumes() {
         return ResponseEntity.ok(productService.getAllPerfumeResponses());
+    }
+
+    /**
+     * 자체제작 향수 조회하기
+     */
+    @GetMapping("/product")
+    public ResponseEntity<List<PerfumeResponse>> getAllProducts() {
+        return ResponseEntity.ok(productService.getAllProductResponses());
     }
 
     /**
