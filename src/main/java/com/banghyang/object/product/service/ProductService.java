@@ -13,7 +13,6 @@ import com.banghyang.object.product.repository.ProductRepository;
 import com.banghyang.object.review.service.ReviewService;
 import com.banghyang.object.spice.entity.Spice;
 import com.banghyang.object.spice.repository.SpiceRepository;
-import com.banghyang.scentlens.dto.ProductResponse;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
