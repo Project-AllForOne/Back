@@ -20,4 +20,5 @@ public class PerfumeResponse {
     private String topNote;
     private String middleNote;
     private String baseNote;
+    private Long price;
 }

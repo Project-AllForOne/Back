@@ -10,7 +10,6 @@ import com.banghyang.object.product.entity.Product;
 import com.banghyang.object.product.entity.ProductImage;
 import com.banghyang.object.product.repository.ProductImageRepository;
 import com.banghyang.object.product.repository.ProductRepository;
-import com.banghyang.object.review.service.ReviewService;
 import com.banghyang.object.spice.entity.Spice;
 import com.banghyang.object.spice.repository.SpiceRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -20,7 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -109,7 +107,7 @@ public class ProductService {
                 .toList();
     }
     /**
-     *
+     *자체제작 향수 조회하기
      */
     public List<PerfumeResponse> getAllProductResponses() {
         // perfume 엔티티 전체 가져와서 리스트에 담기
@@ -127,6 +125,7 @@ public class ProductService {
                     perfumeResponse.setSizeOption(perfumeEntity.getSizeOption()); // 용량 옵션
                     perfumeResponse.setMainAccord(perfumeEntity.getMainAccord()); // 메인어코드
                     perfumeResponse.setIngredients(perfumeEntity.getIngredients()); // 성분
+                    perfumeResponse.setPrice(perfumeEntity.getPrice());
 
                     // 이미지
                     perfumeResponse.setImageUrlList(
