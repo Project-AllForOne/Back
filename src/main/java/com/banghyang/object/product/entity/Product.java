@@ -24,6 +24,7 @@ public class Product {
     private String content;     // 제품 설명
     private String sizeOption;  // 제품 용량
     private String mainAccord;  // 제품 메인향
+    private Long price;         // 제품 가격
 
     @Lob
     @Column(columnDefinition = "TEXT") // mysql 에서 text 로 저장하게하여 길이 늘리기
@@ -43,7 +44,7 @@ public class Product {
 
     // 빌더
     @Builder
-    public Product(String nameEn, String nameKr, String brand, String grade, String content, String sizeOption, String mainAccord, String ingredients, Category category) {
+    public Product(String nameEn, String nameKr, String brand, String grade, String content, String sizeOption, String mainAccord, String ingredients, Category category, Long price) {
         this.nameEn = nameEn;
         this.nameKr = nameKr;
         this.brand = brand;
@@ -53,6 +54,7 @@ public class Product {
         this.mainAccord = mainAccord;
         this.ingredients = ingredients;
         this.category = category;
+        this.price = price;
     }
 
     // 제품 정보 수정 메소드
