@@ -71,36 +71,10 @@ public class ProductService {
                                     }).toList()
                     );
 
-                    // 노트
-                    List<Note> noteEntityList = noteRepository.findByProduct(perfumeEntity); // 모든 노트 조회
-                    // 싱글노트
-                    perfumeResponse.setSingleNote(
-                            noteEntityList.stream()
-                                    .filter(noteEntity -> noteEntity.getNoteType().equals(NoteType.SINGLE))
-                                    .map(noteEntity -> noteEntity.getSpice().getNameKr())
-                                    .collect(Collectors.joining(", "))
-                    );
-                    // 탑노트
-                    perfumeResponse.setTopNote(
-                            noteEntityList.stream()
-                                    .filter(noteEntity -> noteEntity.getNoteType().equals(NoteType.TOP))
-                                    .map(noteEntity -> noteEntity.getSpice().getNameKr())
-                                    .collect(Collectors.joining(", "))
-                    );
-                    // 미들노트
-                    perfumeResponse.setMiddleNote(
-                            noteEntityList.stream()
-                                    .filter(noteEntity -> noteEntity.getNoteType().equals(NoteType.MIDDLE))
-                                    .map(noteEntity -> noteEntity.getSpice().getNameKr())
-                                    .collect(Collectors.joining(", "))
-                    );
-                    // 베이스노트
-                    perfumeResponse.setBaseNote(
-                            noteEntityList.stream()
-                                    .filter(noteEntity -> noteEntity.getNoteType().equals(NoteType.BASE))
-                                    .map(noteEntity -> noteEntity.getSpice().getNameKr())
-                                    .collect(Collectors.joining(", "))
-                    );
+                    // 노트 조회
+                    List<Note> noteEntityList = noteRepository.findByProduct(perfumeEntity);
+                    setNotesByType(perfumeResponse, noteEntityList);
+
                     return perfumeResponse;
                 })
                 .sorted(Comparator.comparing(PerfumeResponse::getNameKr)) // 한글명순으로 정렬
@@ -141,40 +115,35 @@ public class ProductService {
                                     }).toList()
                     );
 
-                    // 노트
-                    List<Note> noteEntityList = noteRepository.findByProduct(perfumeEntity); // 모든 노트 조회
-                    // 싱글노트
-                    perfumeResponse.setSingleNote(
-                            noteEntityList.stream()
-                                    .filter(noteEntity -> noteEntity.getNoteType().equals(NoteType.SINGLE))
-                                    .map(noteEntity -> noteEntity.getSpice().getNameKr())
-                                    .collect(Collectors.joining(", "))
-                    );
-                    // 탑노트
-                    perfumeResponse.setTopNote(
-                            noteEntityList.stream()
-                                    .filter(noteEntity -> noteEntity.getNoteType().equals(NoteType.TOP))
-                                    .map(noteEntity -> noteEntity.getSpice().getNameKr())
-                                    .collect(Collectors.joining(", "))
-                    );
-                    // 미들노트
-                    perfumeResponse.setMiddleNote(
-                            noteEntityList.stream()
-                                    .filter(noteEntity -> noteEntity.getNoteType().equals(NoteType.MIDDLE))
-                                    .map(noteEntity -> noteEntity.getSpice().getNameKr())
-                                    .collect(Collectors.joining(", "))
-                    );
-                    // 베이스노트
-                    perfumeResponse.setBaseNote(
-                            noteEntityList.stream()
-                                    .filter(noteEntity -> noteEntity.getNoteType().equals(NoteType.BASE))
-                                    .map(noteEntity -> noteEntity.getSpice().getNameKr())
-                                    .collect(Collectors.joining(", "))
-                    );
+                    // 노트 조회
+                    List<Note> noteEntityList = noteRepository.findByProduct(perfumeEntity);
+                    setNotesByType(perfumeResponse, noteEntityList);
+
                     return perfumeResponse;
                 })
                 .sorted(Comparator.comparing(PerfumeResponse::getNameKr)) // 한글명순으로 정렬
                 .toList();
+    }
+
+    /**
+     * 노트 데이터를 타입별 문자열로 변환하여 응답객체에 설정
+     * @param perfumeResponse 노트 정보가 설정될 향수 응답 객체
+     * @param notes 타입별로 그룹화하여 문자열로 변환할 노트 리스트
+     */
+    private void setNotesByType(PerfumeResponse perfumeResponse, List<Note> notes) {
+        Map<NoteType, String> noteMap = notes.stream()
+                .collect(Collectors.groupingBy(
+                        Note::getNoteType,
+                        Collectors.mapping(
+                                note -> note.getSpice().getNameKr(),
+                                Collectors.joining(", ")
+                        )
+                ));
+
+        perfumeResponse.setSingleNote(noteMap.getOrDefault(NoteType.SINGLE, ""));
+        perfumeResponse.setTopNote(noteMap.getOrDefault(NoteType.TOP, ""));
+        perfumeResponse.setMiddleNote(noteMap.getOrDefault(NoteType.MIDDLE, ""));
+        perfumeResponse.setBaseNote(noteMap.getOrDefault(NoteType.BASE, ""));
     }
 
     /**
@@ -538,12 +507,12 @@ public class ProductService {
     /**
      * 특정 향수의 유사 향수 조회
      */
-    public ProductDetailResponse getProductDetail(Long productId) {
+    public ProductDetailSimilarResponse getProductDetailSimilar(Long productId) {
         // 유사 향수 데이터 가져오기 (note_based, design_based)
         Map<String, List<SimilarPerfumeResponse>> similarPerfumes = similarPerfumeService.getSimilarPerfumes(productId);
 
         // Map 타입 그대로 전달
-        return new ProductDetailResponse(similarPerfumes);
+        return new ProductDetailSimilarResponse(similarPerfumes);
     }
 
 
