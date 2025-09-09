@@ -2,7 +2,7 @@ package com.banghyang.object.product.controller;
 
 import com.banghyang.object.product.dto.PerfumeResponse;
 import com.banghyang.object.product.dto.ProductCreateRequest;
-import com.banghyang.object.product.dto.ProductDetailResponse;
+import com.banghyang.object.product.dto.ProductDetailSimilarResponse;
 import com.banghyang.object.product.dto.ProductModifyRequest;
 import com.banghyang.object.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -37,11 +37,11 @@ public class ProductController {
     }
 
     /**
-     * 특정 향수 조회하기
+     * 향수 상세페이지에서 유사향수 조회하기
      */
     @GetMapping("/{productId}")
-    public ResponseEntity<ProductDetailResponse> getProductDetail(@PathVariable Long productId) {
-        return ResponseEntity.ok(productService.getProductDetail(productId));
+    public ResponseEntity<ProductDetailSimilarResponse> getProductDetailSimilar(@PathVariable Long productId) {
+        return ResponseEntity.ok(productService.getProductDetailSimilar(productId));
     }
 
     /**
