@@ -105,12 +105,12 @@ public class ProductService {
                     perfumeResponse.setImageUrlList(
                             productImageRepository.findByProduct(perfumeEntity).stream()
                                     .map(productImage -> {
-                                        if (productImage.getNoBgUrl() != null) {
-                                            // 배경제거 이미지가 있으면 배경 제거 이미지 URL 로 반환
-                                            return productImage.getNoBgUrl();
-                                        } else {
-                                            // 배경제거 이미지가 없으면 기존 이미지로 반환
+                                        if (productImage.getUrl() != null) {
+                                            // 기존 이미지(배경있는 이미지)가 있으면 기존 이미지 URL로 반환
                                             return productImage.getUrl();
+                                        } else {
+                                            // 기존 이미지가 없으면 배경제거 이미지로 반환
+                                            return productImage.getNoBgUrl();
                                         }
                                     }).toList()
                     );
