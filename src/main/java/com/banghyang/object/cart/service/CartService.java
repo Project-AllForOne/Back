@@ -1,12 +1,10 @@
 package com.banghyang.object.cart.service;
 
-import com.banghyang.common.type.NoteType;
 import com.banghyang.member.entity.Member;
 import com.banghyang.member.repository.MemberRepository;
 import com.banghyang.object.cart.dto.CartResponse;
 import com.banghyang.object.cart.entity.Cart;
 import com.banghyang.object.cart.repository.CartRepository;
-import com.banghyang.object.note.entity.Note;
 import com.banghyang.object.product.entity.Product;
 import com.banghyang.object.product.entity.ProductImage;
 import com.banghyang.object.product.repository.ProductImageRepository;
@@ -20,7 +18,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
