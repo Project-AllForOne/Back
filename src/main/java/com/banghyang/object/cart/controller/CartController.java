@@ -1,5 +1,6 @@
 package com.banghyang.object.cart.controller;
 
+import com.banghyang.member.entity.Member;
 import com.banghyang.object.cart.dto.CartRequest;
 import com.banghyang.object.cart.service.CartService;
 import jakarta.persistence.EntityNotFoundException;
@@ -76,6 +77,32 @@ public class CartController {
 
 
     /**
+     * ✅ 장바구니 전체 삭제 요청 (DELETE)
+     * @param memberId 장바구니 삭제를 하는 사용자 ID
+     * @return 삭제 성공 여부 응답
+     */
+    @DeleteMapping("/{memberId}")
+    public ResponseEntity<?> allDeleteCart(@PathVariable("memberId") Member memberId) {
+        log.info("🗑️ [장바구니 전체 삭제 요청] memberId={}", memberId);
+
+        if (memberId == null) {
+            log.error("❌ memberId 가 null입니다! 요청을 확인하세요.");
+            return ResponseEntity.badRequest().body("memberId가 null입니다.");
+        }
+
+        boolean isDeleted = cartService.deleteAllCart(memberId);
+
+        if (isDeleted) {
+            log.info("✅ [장바구니 전체 삭제 완료] memberId={}", memberId);
+            return ResponseEntity.ok().body("장바구니가 정상적으로 전체 삭제되었습니다.");
+        } else {
+            log.warn("⚠️ [장바구니 전체 삭제 실패] memberId={}에 대한 장바구니 데이터가 존재하지 않습니다.", memberId);
+            return ResponseEntity.badRequest().body("장바구니 데이터가 존재하지 않아 삭제할 수 없습니다.");
+        }
+    }
+
+
+    /**
      * 장바구니에 있는 제품 개수 수정
      * @param cartRequest 장바구니 추가 요청 정보
      * @return 삭제 성공 여부 응답
@@ -112,7 +139,7 @@ public class CartController {
      */
     @GetMapping("/{memberId}")
     public ResponseEntity<?> getCart(@PathVariable("memberId") Long memberId) {
-        log.info("🔍 [찜 조회 요청] memberId={}", memberId);
+        log.info("🔍 [장바구니 조회 요청] memberId={}", memberId);
 
         if (memberId == null) {
             log.error("❌ memberId가 null입니다! 요청을 확인하세요.");

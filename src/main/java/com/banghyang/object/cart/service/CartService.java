@@ -9,6 +9,7 @@ import com.banghyang.object.product.entity.Product;
 import com.banghyang.object.product.entity.ProductImage;
 import com.banghyang.object.product.repository.ProductImageRepository;
 import com.banghyang.object.product.repository.ProductRepository;
+import com.banghyang.object.wishlist.entity.Wishlist;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -101,7 +102,35 @@ public class CartService {
             log.info("✅ [장바구니에 있는 제품 삭제 완료] memberId={}, productId={} 삭제된 개수: {}", memberId, productId, deletedCount);
             return true;
         } else {
-            log.warn("⚠️ [장바구니에 있는 제품 삭제 실패] memberId={}, productId={}에 대한 찜 데이터가 존재하지 않습니다.", memberId, productId);
+            log.warn("⚠️ [장바구니에 있는 제품 삭제 실패] memberId={}, productId={}에 대한 장바구니 데이터가 존재하지 않습니다.", memberId, productId);
+            return false;
+        }
+    }
+
+
+
+    /**
+     * 장바구니 전체 삭제 메소드
+     * @param memberId 장바구니 삭제하는 사용자 id
+     * @return 장바구니 삭제 완료 여부 반환
+     */
+    public boolean deleteAllCart(Member memberId) {
+        if (memberId == null) {
+            log.error("❌ [장바구니 삭제] memberId가 null입니다!");
+            throw new IllegalArgumentException("memberId 또는 productId가 null입니다.");
+        }
+
+        log.info("🗑️ [장바구니 전체 삭제] memberId={} 삭제 요청 처리 중...", memberId);
+
+        // 장바구니 엔티티 찾기
+        List<Cart> cartsToDelete = cartRepository.findByMember(memberId);
+
+        if (!cartsToDelete.isEmpty()) {
+            cartRepository.deleteAll(cartsToDelete);
+            log.info("✅ [장바구니 삭제 완료] memberId={},삭제된 개수: {}", memberId, cartsToDelete.size());
+            return true;
+        } else {
+            log.warn("⚠️ [장바구니 삭제 실패] memberId={}에 대한 장바구니 데이터가 존재하지 않습니다.", memberId);
             return false;
         }
     }
@@ -138,7 +167,7 @@ public class CartService {
      * 회원의 장바구니 목록을 조회하여 향수 상세 정보를 반환
      *
      * @param memberId 조회할 회원의 ID
-     * @return 찜한 향수 목록과 총 개수를 포함한 Map
+     * @return 장바구니에 넣은 향수 목록과 총 개수를 포함한 Map
      *         - "cart": 장바구니에 넣음 제품 리스트
      *         - "totalCount": 장바구니에 들어있는 향수 총 개수
      */
