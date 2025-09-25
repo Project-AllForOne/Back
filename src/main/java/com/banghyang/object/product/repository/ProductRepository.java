@@ -24,4 +24,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
         }
         return Optional.of(products.get(0));  // 첫 번째 결과 반환
     }
+
+    // ID와 카테고리로 상품 조회
+    Optional<Product> findByIdAndCategoryId(Long id, Long categoryId);
 }
