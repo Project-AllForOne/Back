@@ -85,7 +85,8 @@ public class ProductService {
      */
     public List<PerfumeResponse> getAllProductResponses() {
         // perfume 엔티티 전체 가져와서 리스트에 담기
-        List<Product> perfumeEntityList = productRepository.findByCategoryId(3L); // 자체제작 향수 카테고리 아이디는 3(Long)
+        List<Long> categoryIds = Arrays.asList(3L, 4L);
+        List<Product> perfumeEntityList = productRepository.findByCategoryIdIn(categoryIds); // 자체제작 향수 카테고리 아이디는 3(Long)
 
         // 향수 엔티티 리스트에 stream 으로 항목마다 접근하여 response 로 변환하는 작업 거치기
         return perfumeEntityList.stream().map(perfumeEntity -> {

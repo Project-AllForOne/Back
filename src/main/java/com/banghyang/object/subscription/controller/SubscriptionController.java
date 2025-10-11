@@ -39,6 +39,9 @@ public class SubscriptionController {
             log.info("✅ [구독 성공] memberId={}, productId={}, subscriptionId={}",
                     memberId, productId, response.getSubscriptionId());
             return ResponseEntity.ok(response);
+        } catch (IllegalStateException e) {
+            log.error("❌ [구독 실패 - 중복 구독] {}", e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (IllegalArgumentException e) {
             log.error("❌ [구독 실패] {}", e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());

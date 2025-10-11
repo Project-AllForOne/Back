@@ -13,6 +13,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     // 카테고리 ID로 제품을 찾는 메서드
     List<Product> findByCategoryId(Long categoryId);
 
+    // 여러 카테고리 ID로 제품을 찾는 메서드 (추가)
+    List<Product> findByCategoryIdIn(List<Long> categoryIds);
+
     // 제품 이름(한글)으로 제품을 찾는 메서드
     @Query("SELECT p FROM Product p WHERE p.nameKr = :nameKr")
     List<Product> findByNameKr(@Param("nameKr") String nameKr);
